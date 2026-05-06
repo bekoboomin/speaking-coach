@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Speaking Coach</title>
+</head>
+<body style="background:#111;color:white;text-align:center;font-family:sans-serif;padding-top:50px;">
+
+    <h1>🎤 Speaking Coach</h1>
+    <p id="prompt">Describe your ideal weekend</p>
+
+    <textarea id="input" placeholder="Speak or type..." style="width:300px;height:100px;border-radius:10px;padding:10px;"></textarea>
+    <br><br>
+
+    <button onclick="startMic()" style="padding:10px 20px;cursor:pointer;">🎤 Speak</button>
+    <button onclick="send()" style="padding:10px 20px;cursor:pointer;background:#0070f3;color:white;border:none;border-radius:5px;">Get Feedback</button>
+
+    <div id="result" style="margin-top:30px;font-weight:bold;color:#00ff00;padding:0 20px;"></div>
+
+    <script>
+    let recognition;
+
+    function startMic(){
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SR){ alert("Mic not supported"); return; }
+
+      recognition = new SR();
+      recognition.lang = "en-US";
+
+      recognition.onresult = (e)=>{
+        document.getElementById("input").value = e.results[0][0].transcript;
+      };
+
+      recognition.start();
+    }
+
+    async function send(){
+      const text = document.getElementById("input").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerText = "Thinking...";
+
+      const res = await fetch("/api/feedback", {
+        method:"POST",
+        headers:{"Content-Type":"text/plain"},
+        body:text
+      });
+
+      const data = await res.json();
+      resultDiv.innerText = data.reply;
+    }
+    </script>
+
+</body>
+</html>
